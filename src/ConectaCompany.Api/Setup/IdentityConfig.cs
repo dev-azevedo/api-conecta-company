@@ -6,9 +6,10 @@ namespace ConectaCompany.Api.Setup;
 
 public static class IdentityConfig
 {
-    public static void AddIdentityConfig(this IServiceCollection services)
+    public static async void AddIdentityConfig(this IServiceCollection services)
     {
-        services.AddIdentity<User, IdentityRole<long>>()
-            .AddEntityFrameworkStores<AppDbContext>();
+        services.AddIdentity<User, Role>()
+            .AddEntityFrameworkStores<AppDbContext>()
+            .AddDefaultTokenProviders();
     }
 }

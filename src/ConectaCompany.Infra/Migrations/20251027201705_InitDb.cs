@@ -32,6 +32,7 @@ namespace ConectaCompany.Infra.Migrations
                 {
                     Id = table.Column<long>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
+                    FullName = table.Column<string>(type: "TEXT", nullable: false),
                     Created = table.Column<DateTime>(type: "TEXT", nullable: false),
                     UserName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "TEXT", maxLength: 256, nullable: true),
@@ -62,6 +63,7 @@ namespace ConectaCompany.Infra.Migrations
                     Name = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
                     CNPJ = table.Column<string>(type: "TEXT", maxLength: 14, nullable: false),
                     Email = table.Column<string>(type: "TEXT", maxLength: 100, nullable: false),
+                    ImagePathLogo = table.Column<string>(type: "TEXT", nullable: false),
                     Active = table.Column<bool>(type: "INTEGER", nullable: false),
                     Created = table.Column<DateTime>(type: "TEXT", nullable: false),
                     Updated = table.Column<DateTime>(type: "TEXT", nullable: true)
@@ -69,22 +71,6 @@ namespace ConectaCompany.Infra.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Companies", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "Profile",
-                columns: table => new
-                {
-                    Id = table.Column<long>(type: "INTEGER", nullable: false)
-                        .Annotation("Sqlite:Autoincrement", true),
-                    Role = table.Column<string>(type: "TEXT", nullable: false),
-                    Active = table.Column<bool>(type: "INTEGER", nullable: false),
-                    Created = table.Column<DateTime>(type: "TEXT", nullable: false),
-                    Updated = table.Column<DateTime>(type: "TEXT", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Profile", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -199,11 +185,9 @@ namespace ConectaCompany.Infra.Migrations
                 {
                     Id = table.Column<long>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    FullName = table.Column<string>(type: "TEXT", nullable: false),
                     Birthday = table.Column<DateOnly>(type: "TEXT", nullable: false),
                     CompanyId = table.Column<long>(type: "INTEGER", nullable: false),
                     UserId = table.Column<long>(type: "INTEGER", nullable: false),
-                    ProfileId = table.Column<long>(type: "INTEGER", nullable: false),
                     Active = table.Column<bool>(type: "INTEGER", nullable: false),
                     Created = table.Column<DateTime>(type: "TEXT", nullable: false),
                     Updated = table.Column<DateTime>(type: "TEXT", nullable: true)
@@ -221,12 +205,6 @@ namespace ConectaCompany.Infra.Migrations
                         name: "FK_Employees_Companies_CompanyId",
                         column: x => x.CompanyId,
                         principalTable: "Companies",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_Employees_Profile_ProfileId",
-                        column: x => x.ProfileId,
-                        principalTable: "Profile",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -313,11 +291,6 @@ namespace ConectaCompany.Infra.Migrations
                 column: "CompanyId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Employees_ProfileId",
-                table: "Employees",
-                column: "ProfileId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Employees_UserId",
                 table: "Employees",
                 column: "UserId",
@@ -371,9 +344,6 @@ namespace ConectaCompany.Infra.Migrations
 
             migrationBuilder.DropTable(
                 name: "Companies");
-
-            migrationBuilder.DropTable(
-                name: "Profile");
         }
     }
 }

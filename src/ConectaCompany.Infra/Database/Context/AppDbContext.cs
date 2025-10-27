@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ConectaCompany.Infra.Database.Context;
 
-public class AppDbContext : IdentityDbContext<User, IdentityRole<long>, long>
+public class AppDbContext : IdentityDbContext<User, Role, long>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
     {

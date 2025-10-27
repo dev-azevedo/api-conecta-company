@@ -20,10 +20,6 @@ public class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
             .WithMany(c => c.Employees)
             .HasForeignKey(e => e.CompanyId);
         
-        builder.HasOne(e => e.Profile)
-            .WithMany(p => p.Employees)
-            .HasForeignKey(e => e.ProfileId);
-        
         builder.HasMany(e => e.CreatedPosts)
             .WithOne(p => p.CreatedBy)
             .HasForeignKey(p => p.CreatedById);

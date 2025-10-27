@@ -8,6 +8,7 @@ public interface IUserRepository
     Task<User?> GetByEmailAsync(string email);
     Task<User> CreateAsync(User item, string password);
     Task<User> UpdateAsync(User item);
+    Task AddRoleAsync(User user, string role);
     Task<User> ChangePasswordAsync(User item, string currentPassword, string newPassword);
     Task<User> ResetPasswordAsync(User item, string newPassword);
     Task<bool> DeleteAsync(User item);

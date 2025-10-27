@@ -1,5 +1,6 @@
 ﻿using ConectaCompany.Domain.Interfaces;
 using ConectaCompany.Domain.Models;
+using MapsterMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
@@ -47,6 +48,9 @@ public class UserRepository(UserManager<User> userManager) : IUserRepository
         
         return item;
     }
+    
+    public async Task AddRoleAsync(User user, string role) =>
+        await _userManager.AddToRoleAsync(user, role);
 
     public async Task<User> ChangePasswordAsync(User item, string currentPassword, string newPassword)
     {

@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ConectaCompany.Infra.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251027133641_InitDb")]
+    [Migration("20251027201705_InitDb")]
     partial class InitDb
     {
         /// <inheritdoc />
@@ -40,6 +40,10 @@ namespace ConectaCompany.Infra.Migrations
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(100)
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ImagePathLogo")
+                        .IsRequired()
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Name")
@@ -73,13 +77,6 @@ namespace ConectaCompany.Infra.Migrations
                     b.Property<DateTime>("Created")
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("FullName")
-                        .IsRequired()
-                        .HasColumnType("TEXT");
-
-                    b.Property<long>("ProfileId")
-                        .HasColumnType("INTEGER");
-
                     b.Property<DateTime?>("Updated")
                         .HasColumnType("TEXT");
 
@@ -89,8 +86,6 @@ namespace ConectaCompany.Infra.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("CompanyId");
-
-                    b.HasIndex("ProfileId");
 
                     b.HasIndex("UserId")
                         .IsUnique();
@@ -147,28 +142,31 @@ namespace ConectaCompany.Infra.Migrations
                     b.ToTable("Posts", (string)null);
                 });
 
-            modelBuilder.Entity("ConectaCompany.Domain.Models.Profile", b =>
+            modelBuilder.Entity("ConectaCompany.Domain.Models.Role", b =>
                 {
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<bool>("Active")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<DateTime>("Created")
+                    b.Property<string>("ConcurrencyStamp")
+                        .IsConcurrencyToken()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("Role")
-                        .IsRequired()
+                    b.Property<string>("Name")
+                        .HasMaxLength(256)
                         .HasColumnType("TEXT");
 
-                    b.Property<DateTime?>("Updated")
+                    b.Property<string>("NormalizedName")
+                        .HasMaxLength(256)
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Profile");
+                    b.HasIndex("NormalizedName")
+                        .IsUnique()
+                        .HasDatabaseName("RoleNameIndex");
+
+                    b.ToTable("AspNetRoles", (string)null);
                 });
 
             modelBuilder.Entity("ConectaCompany.Domain.Models.User", b =>
@@ -193,6 +191,10 @@ namespace ConectaCompany.Infra.Migrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("INTEGER");
+
+                    b.Property<string>("FullName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("INTEGER");
@@ -237,33 +239,6 @@ namespace ConectaCompany.Infra.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole<long>", b =>
-                {
-                    b.Property<long>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(256)
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("NormalizedName")
-                        .HasMaxLength(256)
-                        .HasColumnType("TEXT");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NormalizedName")
-                        .IsUnique()
-                        .HasDatabaseName("RoleNameIndex");
-
-                    b.ToTable("AspNetRoles", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<long>", b =>
@@ -373,12 +348,6 @@ namespace ConectaCompany.Infra.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("ConectaCompany.Domain.Models.Profile", "Profile")
-                        .WithMany("Employees")
-                        .HasForeignKey("ProfileId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("ConectaCompany.Domain.Models.User", "User")
                         .WithOne("Employee")
                         .HasForeignKey("ConectaCompany.Domain.Models.Employee", "UserId")
@@ -386,8 +355,6 @@ namespace ConectaCompany.Infra.Migrations
                         .IsRequired();
 
                     b.Navigation("Company");
-
-                    b.Navigation("Profile");
 
                     b.Navigation("User");
                 });
@@ -421,7 +388,7 @@ namespace ConectaCompany.Infra.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<long>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<long>", null)
+                    b.HasOne("ConectaCompany.Domain.Models.Role", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -448,7 +415,7 @@ namespace ConectaCompany.Infra.Migrations
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<long>", b =>
                 {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole<long>", null)
+                    b.HasOne("ConectaCompany.Domain.Models.Role", null)
                         .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
@@ -482,11 +449,6 @@ namespace ConectaCompany.Infra.Migrations
                     b.Navigation("CreatedPosts");
 
                     b.Navigation("UpdatedPosts");
-                });
-
-            modelBuilder.Entity("ConectaCompany.Domain.Models.Profile", b =>
-                {
-                    b.Navigation("Employees");
                 });
 
             modelBuilder.Entity("ConectaCompany.Domain.Models.User", b =>
