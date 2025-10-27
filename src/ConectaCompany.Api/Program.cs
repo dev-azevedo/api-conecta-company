@@ -11,6 +11,7 @@ builder.Services.AddOpenApi();
 // Configuration Project
 builder.Services.AddDbConfig(builder.Configuration);
 builder.Services.AddDiConfig(builder.Configuration);
+builder.Services.AddIdentityConfig();
 
 var app = builder.Build();
 

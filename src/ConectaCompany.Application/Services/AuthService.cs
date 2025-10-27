@@ -1,4 +1,5 @@
-﻿using ConectaCompany.Application.Interfaces;
+﻿using ConectaCompany.Application.Dto;
+using ConectaCompany.Application.Interfaces;
 using ConectaCompany.Domain.Interfaces;
 using ConectaCompany.Domain.Models;
 using Microsoft.AspNetCore.Identity;
@@ -43,12 +44,12 @@ public class AuthService(IUserRepository userRepository, SignInManager<User> sig
          return user;
     }
 
-    public async Task<User> SignUpAsync(User item, string password)
+    public async Task<User> SignUpAsync(UserDto item, string password)
     {
        if (string.IsNullOrWhiteSpace(password))
             throw new InvalidOperationException("Senha é obrigatória.");
         
-       var userByEmail = await _userRepository.GetByEmailAsync(item.Email);
+       var userByEmail = await _userRepository.GetByEmailAsync(item.Email ?? string.Empty);
        if (userByEmail is not null)
             throw new InvalidOperationException("Já existe um usuário cadastrado com este e-mail.");
 
