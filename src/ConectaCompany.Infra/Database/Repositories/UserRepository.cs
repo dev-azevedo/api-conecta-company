@@ -9,8 +9,7 @@ namespace ConectaCompany.Infra.Database.Repositories;
 public class UserRepository(UserManager<User> userManager) : IUserRepository
 {
     private readonly UserManager<User> _userManager = userManager;
-
-
+    
     public async Task<User?> GetByIdAsync(long id)
     {
         return await _userManager.Users
@@ -25,70 +24,72 @@ public class UserRepository(UserManager<User> userManager) : IUserRepository
             .FirstOrDefaultAsync(u => u.Email == email);
     }
 
-    public async Task<User> CreateAsync(User item, string password)
+    public async Task<User> CreateAsync(User user, string password)
     {
-        var result = await _userManager.CreateAsync(item, password);
-        if (!result.Succeeded)
-        {
-            var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-            throw new InvalidOperationException($"Erro ao criar usuário: {errors}");
-        }
+        var result = await _userManager.CreateAsync(user, password);
+        if (result.Succeeded) return user;
         
-        return item;
+        var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+        throw new InvalidOperationException($"Erro ao criar usuário: {errors}");
+
     }
 
-    public async Task<User> UpdateAsync(User item)
+    public async Task<User> UpdateAsync(User user)
     {
-        var result = await _userManager.UpdateAsync(item);
-        if (!result.Succeeded)
-        {
-            var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-            throw new InvalidOperationException($"Erro ao atualizar usuário: {errors}");
-        }
+        var result = await _userManager.UpdateAsync(user);
+        if (result.Succeeded) return user;
         
-        return item;
+        var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+        throw new InvalidOperationException($"Erro ao atualizar usuário: {errors}");
+
     }
     
     public async Task AddRoleAsync(User user, string role) =>
         await _userManager.AddToRoleAsync(user, role);
 
-    public async Task<User> ChangePasswordAsync(User item, string currentPassword, string newPassword)
+    public async Task<User> ChangePasswordAsync(User user, string currentPassword, string newPassword)
     {
-        var result = await _userManager.ChangePasswordAsync(item, currentPassword, newPassword);
-        if (!result.Succeeded)
-        {
-            var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-            throw new InvalidOperationException($"Erro ao alterar senha do usuário: {errors}");
-        }
+        var result = await _userManager.ChangePasswordAsync(user, currentPassword, newPassword);
+        if (result.Succeeded) return user;
         
-        return item;
+        var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+        throw new InvalidOperationException($"Erro ao alterar senha do usuário: {errors}");
+
     }
 
-    public async Task<User> ResetPasswordAsync(User item, string newPassword)
+    public async Task<User> ResetPasswordAsync(User user, string newPassword)
     {
-        var token = await _userManager.GeneratePasswordResetTokenAsync(item);
-        var result = await _userManager.ResetPasswordAsync(item, token, newPassword);
-        if (!result.Succeeded)
-        {
-            var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-            throw new InvalidOperationException($"Erro ao redefinir senha do usuário: {errors}");
-        }
+        var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+        var result = await _userManager.ResetPasswordAsync(user, token, newPassword);
+        if (result.Succeeded) return user;
         
-        return item;
+        var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+        throw new InvalidOperationException($"Erro ao redefinir senha do usuário: {errors}");
+
     }
 
-    public async Task<bool> DeleteAsync(User item)
+    public async Task<string> GenerateTokenConfirmEmailAsync(User user)
     {
-        item.Employee.Deactivate();
-        item.LockoutEnabled = true;
-        item.LockoutEnd = DateTimeOffset.MaxValue;
-        var result = await _userManager.UpdateAsync(item);
-        if (!result.Succeeded)
-        {
-            var errors = string.Join(", ", result.Errors.Select(e => e.Description));
-            throw new InvalidOperationException($"Erro ao excluir usuário: {errors}");
-        }
+        return await _userManager.GenerateEmailConfirmationTokenAsync(user);
+    }
+
+    public async Task<bool> ConfirmEmailAsync(User user, string token)
+    {
+        var result = await _userManager.ConfirmEmailAsync(user, token);
+
+        return result.Succeeded;
+    }
+    
+    public async Task<bool> DeleteAsync(User user)
+    {
+        user.Employee?.Deactivate();
+        user.LockoutEnabled = true;
+        user.LockoutEnd = DateTimeOffset.MaxValue;
+        var result = await _userManager.UpdateAsync(user);
+        if (result.Succeeded) return true;
         
-        return true;
+        var errors = string.Join(", ", result.Errors.Select(e => e.Description));
+        throw new InvalidOperationException($"Erro ao excluir usuário: {errors}");
+
     }
 }

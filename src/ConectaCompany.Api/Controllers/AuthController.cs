@@ -1,10 +1,12 @@
-﻿using ConectaCompany.Application.Dto.Auth;
+﻿using System.Text;
+using ConectaCompany.Application.Dto.Auth;
 using ConectaCompany.Application.Interfaces;
 using ConectaCompany.Domain.Models;
 using ConectaCompany.Infra.ExternalServices.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 
 namespace ConectaCompany.Api.Controllers;
 
@@ -58,9 +60,10 @@ public class AuthController(
         {
             var user = await _authService.SignUpAsync(userDto);
             // Disparar email para confirmaçao
-            
+            var token = await _authService.GenerateTokenConfirmEmailAsync(user.Id);
+            var templateEmail = _authService.GenerateTemplateConfimationEmail(user.FullName, token);
             var subject = "Bem-vindo ao ConectaCompany!";
-            var message = "Confirmar email!";
+            var message = templateEmail;
             await _emailService.SendEmailAsync(user.Email!, subject, message);
             
             return Created();
@@ -70,5 +73,20 @@ public class AuthController(
             return BadRequest(new { Message = ex.Message });
         }
         
+    }
+    
+    [AllowAnonymous]
+    [HttpGet("confirm-email")]
+    public async Task<IActionResult> ConfirmEmail([FromQuery] long userId, string token)
+    {
+        if (token == null)
+            return BadRequest("Link inválido.");
+        
+        var result = await _authService.ConfirmEmailAsync(userId, token);
+        
+        if (result)
+            return Ok("E-mail confirmado com sucesso!");
+
+        return BadRequest("Erro ao confirmar o e-mail.");
     }
 }
