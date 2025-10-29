@@ -1,7 +1,9 @@
-﻿using System.Text;
+﻿using System.Net;
+using System.Text;
 using ConectaCompany.Application.Dto;
 using ConectaCompany.Application.Dto.Auth;
 using ConectaCompany.Application.Interfaces;
+using ConectaCompany.Application.Response;
 using ConectaCompany.Domain.Interfaces;
 using ConectaCompany.Domain.Models;
 using ConectaCompany.Shared.Constants;
@@ -31,32 +33,32 @@ public class AuthService(IUnitOfWork unitOfWork, IMapper mapper, UserManager<Use
         return user;
     }
 
-    public async Task<User?> SignInAsync(string email, string password)
+    public async Task<Result<User>> SignInAsync(string email)
     {
         var user = await _uow.Users.GetByEmailAsync(email);
         if (user == null)
-            throw new InvalidOperationException("Usuário não encontrado.");
+            return Result<User>.Failure("Usuário não encontrado.", HttpStatusCode.NotFound);
 
         if (user.LockoutEnabled && user.LockoutEnd > DateTimeOffset.Now)
-            throw new InvalidOperationException("Usuário está bloqueado.");
+            return Result<User>.Failure("Usuário está bloqueado.", HttpStatusCode.NotFound);
 
-        return user;
+        return Result<User>.Success(user, HttpStatusCode.OK);
     }
 
-    public async Task<User> SignUpAsync(UserDto userDto)
+    public async Task<Result<User>> SignUpAsync(UserDto userDto)
     {
         var user = _mapper.Map<User>(userDto);
 
         var userByEmail = await _uow.Users.GetByEmailAsync(user.Email ?? string.Empty);
         if (userByEmail is not null)
-            throw new InvalidOperationException("Já existe um usuário cadastrado com este e-mail.");
+            return Result<User>.Failure("Já existe um usuário cadastrado com este e-mail.", HttpStatusCode.Conflict);
 
 
         await _uow.Users.CreateAsync(user, userDto.Password);
         await _uow.Users.AddRoleAsync(user, Roles.Manager);
         await _uow.CommitAsync();
 
-        return user;
+        return Result<User>.Success(user, HttpStatusCode.Created);
     }
 
     public async Task<string> GenerateTokenConfirmEmailAsync(long userId)

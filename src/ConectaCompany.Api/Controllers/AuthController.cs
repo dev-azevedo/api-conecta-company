@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Net;
+using System.Text;
 using ConectaCompany.Application.Dto.Auth;
 using ConectaCompany.Application.Interfaces;
 using ConectaCompany.Domain.Models;
@@ -28,26 +29,30 @@ public class AuthController(
     [AllowAnonymous]
     public async Task<IActionResult> SignInAsync(string email, string password)
     {
-        var user = await _authService.GetByEmailAsync(email);
+        var result = await _authService.SignInAsync(email);
         
-        if (user == null)
-            throw new InvalidOperationException("E-mail ou senha inválidos.");
+        if (!result.IsSuccess)
+            return StatusCode((int)result.StatusCode, new { Message = result.Error });
         
-        var result = await _signInManager.PasswordSignInAsync(user, password, false, false);
-        if (!result.Succeeded)
+        if (result.Value == null)
+            return StatusCode(HttpStatusCode.BadRequest.GetHashCode(), "E-mail ou senha inválidos.");
+
+        
+        var resultSignIn = await _signInManager.PasswordSignInAsync(result.Value, password, false, false);
+        if (!resultSignIn.Succeeded)
         {
-            if(result.IsLockedOut)
+            if(resultSignIn.IsLockedOut)
                 throw new InvalidOperationException("Usuário bloqueado por tentativas incorretas.");
              
             throw new InvalidOperationException("E-mail ou senha inválidos.");
         }
         
-        var token = await _jwtService.GenerateToken(user);
-        return Ok(new
+        var token = await _jwtService.GenerateToken(result.Value);
+        return StatusCode((int)result.StatusCode, new
         {
-            UserId = user.Id,
-            FullName = user.FullName,
-            Email = user.Email,
+            UserId = result.Value.Id,
+            FullName = result.Value.FullName,
+            Email = result.Value.Email,
             Token = token
         });
     }
@@ -58,21 +63,26 @@ public class AuthController(
     {
         try
         {
-            var user = await _authService.SignUpAsync(userDto);
-            // Disparar email para confirmaçao
-            var token = await _authService.GenerateTokenConfirmEmailAsync(user.Id);
-            var templateEmail = _authService.GenerateTemplateConfimationEmail(user.FullName, token);
+            var result = await _authService.SignUpAsync(userDto);
+            
+            if (!result.IsSuccess)
+                return StatusCode((int)result.StatusCode, new { Message = result.Error });
+            
+            if (result.Value == null)
+                return StatusCode(HttpStatusCode.BadRequest.GetHashCode(), "Erro ao criar usuário.");
+            
+        
+            var token = await _authService.GenerateTokenConfirmEmailAsync(result.Value.Id);
+            var templateEmail = _authService.GenerateTemplateConfimationEmail(result.Value.FullName, token);
             var subject = "Bem-vindo ao ConectaCompany!";
             var message = templateEmail;
-            await _emailService.SendEmailAsync(user.Email!, subject, message);
-            
-            return Created();
+            await _emailService.SendEmailAsync(result.Value.Email!, subject, message);
+            return StatusCode((int)result.StatusCode, new { Message = "Usuário criado com sucesso. Verifique seu e-mail para confirmar a conta." });
         }
         catch (Exception ex)
         {
-            return BadRequest(new { Message = ex.Message });
+            return StatusCode(HttpStatusCode.InternalServerError.GetHashCode(), ex.Message);
         }
-        
     }
     
     [AllowAnonymous]
