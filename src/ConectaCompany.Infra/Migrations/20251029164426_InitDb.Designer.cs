@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ConectaCompany.Infra.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20251027201705_InitDb")]
+    [Migration("20251029164426_InitDb")]
     partial class InitDb
     {
         /// <inheritdoc />
@@ -453,8 +453,7 @@ namespace ConectaCompany.Infra.Migrations
 
             modelBuilder.Entity("ConectaCompany.Domain.Models.User", b =>
                 {
-                    b.Navigation("Employee")
-                        .IsRequired();
+                    b.Navigation("Employee");
                 });
 #pragma warning restore 612, 618
         }

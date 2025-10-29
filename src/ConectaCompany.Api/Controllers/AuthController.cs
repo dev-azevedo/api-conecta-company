@@ -54,18 +54,21 @@ public class AuthController(
     [AllowAnonymous]
     public async Task<IActionResult> SignUpAsync([FromBody] UserDto userDto)
     {
-        var user = await _authService.SignUpAsync(userDto);
-        // Disparar email para confirmaçao
-        
-        var subject = "Bem-vindo ao ConectaCompany!";
-        var message = "Confirmar email!";
-        await _emailService.SendEmailAsync(user.Email!, subject, message);
-        
-        return CreatedAtAction(nameof(SignUpAsync), new { id = user.Id }, new
+        try
         {
-            UserId = user.Id,
-            FullName = user.FullName,
-            Email = user.Email
-        });
+            var user = await _authService.SignUpAsync(userDto);
+            // Disparar email para confirmaçao
+            
+            var subject = "Bem-vindo ao ConectaCompany!";
+            var message = "Confirmar email!";
+            await _emailService.SendEmailAsync(user.Email!, subject, message);
+            
+            return Created();
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { Message = ex.Message });
+        }
+        
     }
 }

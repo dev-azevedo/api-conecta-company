@@ -450,8 +450,7 @@ namespace ConectaCompany.Infra.Migrations
 
             modelBuilder.Entity("ConectaCompany.Domain.Models.User", b =>
                 {
-                    b.Navigation("Employee")
-                        .IsRequired();
+                    b.Navigation("Employee");
                 });
 #pragma warning restore 612, 618
         }

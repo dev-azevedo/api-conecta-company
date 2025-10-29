@@ -9,35 +9,25 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
 
-// Configuration Project
+// Configuration Project Services
 builder.Services.AddDatabaseConfig(builder.Configuration);
 builder.Services.AddDependencyInjectionConfig(builder.Configuration);
 builder.Services.AddJwtConfig(builder.Configuration);
 builder.Services.AddSmtpConfig(builder.Configuration);
 builder.Services.AddIdentityConfig();
 builder.Services.AddMapperConfig();
+builder.Services.AddSwaggerConfig();
 
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<Role>>();
-    await DbInitializer.SeedRoles(roleManager);
-}
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+// Configuration Project Application
+app.UseIdentityConfig();
+app.UseSwaggerConfig(builder.Environment);
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
 
 app.Run();
